@@ -65,57 +65,112 @@
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Interface
+                Menu
             </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-user-circle"></i>
-                    <span>Clients</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
-                        <a class="collapse-item" href="buttons.html">List</a>
-                        <a class="collapse-item" href="cards.html">Create</a>
+            @can('isAdmin')
+                <!-- Nav Item - Pages Collapse Menu -->
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                        aria-expanded="true" aria-controls="collapseTwo">
+                        <i class="fas fa-fw fa-user-circle"></i>
+                        <span>Clients</span>
+                    </a>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                            <a class="collapse-item" href="buttons.html">List</a>
+                            <a class="collapse-item" href="cards.html">Create</a>
+                        </div>
                     </div>
-                </div>
-            </li>
+                </li>
 
-            <!-- Nav Item - Utilities Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
-                    <i class="fas fa-fw fa-wrench"></i>
-                    <span>Users</span>
-                </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                    data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        {{-- <h6 class="collapse-header">Custom Utilities:</h6> --}}
-                        <a class="collapse-item" href="utilities-color.html">List</a>
-                        <a class="collapse-item" href="utilities-border.html">Register</a>
+                <!-- Nav Item - Utilities Collapse Menu -->
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+                        aria-expanded="true" aria-controls="collapseUtilities">
+                        <i class="fas fa-fw fa-wrench"></i>
+                        <span>Users</span>
+                    </a>
+                    <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                        data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            {{-- <h6 class="collapse-header">Custom Utilities:</h6> --}}
+                            <a class="collapse-item" href="utilities-color.html">List</a>
+                            <a class="collapse-item" href="utilities-border.html">Register</a>
+                        </div>
                     </div>
-                </div>
-            </li>
+                </li>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                    aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fas fa-fw fa-map"></i>
-                    <span>Plots</span>
-                </a>
-                <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="login.html">View Map</a>
-                        <a class="collapse-item" href="register.html">List</a>
-                        <a class="collapse-item" href="forgot-password.html">Create</a>
+                <!-- Nav Item - Pages Collapse Menu -->
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
+                        aria-expanded="true" aria-controls="collapsePages">
+                        <i class="fas fa-fw fa-map"></i>
+                        <span>Plots</span>
+                    </a>
+                    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <a class="collapse-item" href="login.html">View Map</a>
+                            <a class="collapse-item" href="register.html">List</a>
+                            <a class="collapse-item" href="forgot-password.html">Create</a>
+                        </div>
                     </div>
-                </div>
-            </li>
+                </li>
+            
+            @elsecan('isCashier')
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                        aria-expanded="true" aria-controls="collapseTwo">
+                        <i class="fas fa-fw fa-cash"></i>
+                        <span>Payments</span>
+                    </a>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                            <a class="collapse-item" href="buttons.html">List</a>
+                            {{-- <a class="collapse-item" href="cards.html">List</a> --}}
+                        </div>
+                    </div>
+                </li>
+
+
+            @elsecan('isFrontDesk')
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                        aria-expanded="true" aria-controls="collapseTwo">
+                        <i class="fas fa-fw fa-map"></i>
+                        <span>Plots</span>
+                    </a>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                            <a class="collapse-item" href="buttons.html">Map</a>
+                            <a class="collapse-item" href="cards.html">List</a>
+                        </div>
+                    </div>
+                </li>
+
+            
+            @else //isClient
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                        aria-expanded="true" aria-controls="collapseTwo">
+                        <i class="fas fa-fw fa-map"></i>
+                        <span>Plots</span>
+                    </a>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                            <a class="collapse-item" href="buttons.html">Map</a>
+                            <a class="collapse-item" href="cards.html">List</a>
+                        </div>
+                    </div>
+                </li>
+
+            @endcan
+
+
 
             <!-- Nav Item - Charts -->
             {{-- <li class="nav-item">
