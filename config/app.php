@@ -232,4 +232,21 @@ return [
 
     ],
 
+    'roles' => [
+        0 => "Admin",
+        1 => "Front Desk",
+        2 => "Cashier",
+        3 => "Client",
+    ],
+
+    'suffixes' => [
+        "Jr",
+        "Sr",
+    ],
+
+    'statuses' => [
+        0 => "Active",
+        1 => "Not Active"
+    ],
+
 ];
