@@ -15,6 +15,13 @@
                     @endif
 
                     {{ __('You are logged in!') }}
+
+                    <div id="app">
+                        ++++
+                        <map-view> </map-view>
+                        <MapView> </MapView>
+                        ---
+                    </div>
                 </div>
             </div>
         </div>
