@@ -18,8 +18,9 @@
 
                     <div id="app">
                         ++++
-                        <map-view> </map-view>
-                        <MapView> </MapView>
+                        <map-view>
+                        </map-view>
+                        
                         ---
                     </div>
                 </div>

@@ -14,7 +14,8 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Scripts -->
-    <script src="{{ mix('js/app.js') }}" defer></script>
+    <script src="{{ asset('js/app.js') }}" defer></script>
+    {{-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBV5geqJ7MDUbGbuForsK36SWqJIX2VBJ0&libraries=drawing"></script> --}}
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -342,14 +343,15 @@
 
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
-
+    
     <!-- Page level plugins -->
-    <script src="vendor/chart.js/Chart.min.js"></script>
+    {{-- <script src="vendor/chart.js/Chart.min.js"></script>
 
     <!-- Page level custom scripts -->
     <script src="js/demo/chart-area-demo.js"></script>
-    <script src="js/demo/chart-pie-demo.js"></script>
-
+    <script src="js/demo/chart-pie-demo.js"></script> --}}
+    {{-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkUOdZ5y7hMm0yrcCQoCvLwzdM6M8s5qk&libraries=drawing"> --}}
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBV5geqJ7MDUbGbuForsK36SWqJIX2VBJ0&libraries=drawing"></script>
 </body>
 
 </html>
