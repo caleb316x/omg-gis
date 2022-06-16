@@ -238,6 +238,14 @@ return [
         2 => "Cashier",
         3 => "Client",
     ],
+    'rolesFD' => [
+        3 => "Client",
+    ],
+    'rolesAD' => [
+        0 => "Admin",
+        1 => "Front Desk",
+        2 => "Cashier",
+    ],
 
     'suffixes' => [
         "Jr",

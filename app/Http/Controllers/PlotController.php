@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coordinate;
 use App\Models\Plot;
 use Illuminate\Http\Request;
 
@@ -12,9 +13,20 @@ class PlotController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function mapview()
+    {
+        return view('plot.map');
+    }
+
     public function index()
     {
         //
+    }
+
+    public function getPlots()
+    {
+        $plots = Plot::with("coordinates")->get();
+        return response()->json($plots);
     }
 
     /**
@@ -35,7 +47,11 @@ class PlotController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $plot = Plot::create($request->all());
+        $request->shape_data = Coordinate::getMapCoordinates($request->shape_data,$plot);
+        $coordinate = Coordinate::insert($request->shape_data);
+        $plotData = Plot::with("coordinates")->whereId($plot->id)->get();
+        return response()->json($plotData);
     }
 
     /**

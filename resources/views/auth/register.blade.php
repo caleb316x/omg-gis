@@ -84,12 +84,16 @@
                             </div>
                         </div>
 
+                        @can('isAdmin')
                         <div class="row mb-3">
                             <label for="role" class="col-md-4 col-form-label text-md-end">{{ __('Role') }}</label>
 
                             <div class="col-md-6">
                                 {{-- <select id="role" class="form-control @error('role') is-invalid @enderror" name="role" value="{{ old('role') }}" required> --}}
-                                {{ Form::select('role', config('app.roles'), 3 , ['class'=> 'form-control' ]) }}
+
+                                
+                                {{ Form::select('role', config('app.rolesAD'), 0 , ['class'=> 'form-control' ]) }}
+                                
 
                                 @error('role')
                                     <span class="invalid-feedback" role="alert">
@@ -98,6 +102,7 @@
                                 @enderror
                             </div>
                         </div>
+                        @endcan
 
                         <div class="row mb-3">
                             <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>

@@ -17,9 +17,12 @@ class CreatePlotsTable extends Migration
         Schema::create('plots', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->nullable()->constrained();
-            $table->string('name');
+            // $table->string('name');
             $table->integer('type')->nullable();
             $table->float('price')->nullable();
+            $table->float('area_length')->nullable();
+            $table->float('area_width')->nullable();
+            $table->string('block')->nullable();
             $table->integer('status')->default(0);
             $table->timestamps();
         });

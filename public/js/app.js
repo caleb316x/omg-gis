@@ -5269,7 +5269,102 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  props: {
+    isAdmin: Boolean
+  },
   data: function data() {
     return {
       center: {
@@ -5287,17 +5382,32 @@ __webpack_require__.r(__webpack_exports__);
           lng: 11.0
         }
       }],
+      drawing: false,
       map: null,
       drawman: null,
       setSelection: null,
       shapes: [],
       selected_shape: null,
       clearShapes: null,
-      clearSelection: null
+      clearSelection: null,
+      infowindow: null,
+      grave_data: {
+        type: 1,
+        price: null,
+        area_length: null,
+        area_width: null,
+        block: 0,
+        status: 0,
+        shape_data: {
+          coordinates: null,
+          type: null
+        }
+      }
     };
   },
   mounted: function mounted() {
     this.initMap();
+    this.getPlots();
   },
   methods: {
     initMap: function initMap() {
@@ -5313,6 +5423,7 @@ __webpack_require__.r(__webpack_exports__);
         mapTypeControl: true,
         streetViewControl: false
       });
+      ts.infowindow = new google.maps.InfoWindow({});
 
       this.clearSelection = function () {
         if (ts.selected_shape) {
@@ -5330,10 +5441,18 @@ __webpack_require__.r(__webpack_exports__);
       };
 
       this.drawman = new google.maps.drawing.DrawingManager({
-        map: this.map,
+        // map: null,
+        // map: this.map,
         drawingControlOptions: {
           position: google.maps.ControlPosition.TOP_CENTER,
-          drawingModes: [google.maps.drawing.OverlayType.POLYGON]
+          drawingModes: [google.maps.drawing.OverlayType.POLYGON, google.maps.drawing.OverlayType.MARKER]
+        },
+        polygonOptions: {
+          strokeWeight: 2,
+          editable: false,
+          // draggable: true,
+          zIndex: 1,
+          fillOpacity: 0.5
         }
       });
 
@@ -5341,17 +5460,173 @@ __webpack_require__.r(__webpack_exports__);
         ts.clearSelection();
         ts.selected_shape = shape;
         ts.selected_shape.set(ts.selected_shape.type === google.maps.drawing.OverlayType.MARKER ? "draggable" : "editable", true);
+        ts.selected_shape.set("draggable", true);
+        ts.selected_shape.set("editable", true);
+        ts.selected_shape.set("drawn", true);
       };
 
       google.maps.event.addListener(this.drawman, "overlaycomplete", function (e) {
         var shape = e.overlay;
         shape.type = e.type;
+        console.log("shape", shape);
+        ts.drawman.setDrawingMode(null);
         google.maps.event.addListener(shape, "click", function () {
           ts.setSelection(this);
         });
         ts.setSelection(shape);
         ts.shapes.push(shape);
+        console.log("shape length: ", ts.shapes.length); //disable drawtool after drawn
+
+        ts.drawman.setMap(null);
+        console.log("Get last shape"); // ts.drawing = false;
       });
+    },
+    drawTools: function drawTools() {
+      if (this.drawing) {
+        this.drawman.setMap(null);
+        this.drawing = false;
+        this.clearDrawn();
+      } else {
+        this.drawman.setMap(this.map);
+        this.drawing = true;
+      }
+    },
+    clearDrawn: function clearDrawn() {
+      var lastdrawn = this.shapes[this.shapes.length - 1];
+
+      if ("drawn" in lastdrawn) {
+        lastdrawn.set("map", null);
+        this.shapes.pop();
+        console.log("After delete: ", this.shapes);
+      }
+    },
+    createPlot: function createPlot() {
+      var _this = this;
+
+      var ts = this;
+      var shape_data = this.shapes[this.shapes.length - 1];
+      var shape_coordinates = shape_data.latLngs.getArray()[0].Qd.map(function (coord) {
+        return {
+          lat: coord.lat(),
+          lng: coord.lng()
+        };
+      }); // console.log("shape_data", shape_data.latLngs.getArray()[0].Qd[0].lat());
+
+      console.log("shape_coordinates", shape_coordinates);
+      this.grave_data.shape_data = {
+        coordinates: shape_coordinates,
+        type: shape_data.type
+      };
+      console.log("grave_data", this.grave_data);
+      var requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(this.grave_data)
+      };
+      fetch("/plots", requestOptions).then(function (res) {
+        return res.json();
+      }).then(function (res) {
+        console.log("res", res);
+
+        _this.clearDrawn();
+
+        _this.drawPlot(res[0]);
+
+        _this.drawTools();
+      });
+    },
+    drawPlot: function drawPlot(data) {
+      var ts = this;
+      var coords = data.coordinates.map(function (coord) {
+        return {
+          lat: coord.lat,
+          lng: coord["long"]
+        };
+      });
+      var Scolor = "#FF0000";
+      var Fcolor = "#00a1c2";
+      var Ctype = "";
+      var Gstatus = "";
+      var price = 0;
+
+      if (data.type == "0") {
+        Scolor = "#FF0000";
+        Ctype = "A";
+        price = 20000;
+      }
+
+      if (data.type == "1") {
+        Scolor = "#0000FF";
+        Ctype = "B";
+        price = 50000;
+      }
+
+      if (data.type == "2") {
+        Scolor = "#008000";
+        Ctype = "C";
+        price = 80000;
+      }
+
+      if (data.status == 0) {
+        Fcolor = "#00a1c2";
+        Gstatus = "Available";
+      }
+
+      if (data.status == 1) {
+        Fcolor = "#B22222";
+        Gstatus = "Maintenance";
+      }
+
+      var bounds = new google.maps.LatLngBounds();
+
+      for (var i = 0; i <= coords.length - 1; i++) {
+        bounds.extend(new google.maps.LatLng(coords[i].lat, coords[i].lng));
+      }
+
+      var cenpos = new google.maps.LatLng(bounds.getCenter().lat(), bounds.getCenter().lng());
+      var content = "<p> Grave type: <b>" + Ctype + "</b></p> <p> Grave Status: <b>" + Gstatus + "</b></p><p> Area (LxW) meters: <b>" + data.area_length + " x " + data.area_width + "</b></p><p> Price: <b>" + ts.moneyformat(price) + "</b></p>";
+      var drawnshape = new google.maps.Polygon({
+        path: coords,
+        geodesic: true,
+        strokeColor: Scolor,
+        strokeOpacity: 1.0,
+        strokeWeight: 1,
+        fillColor: Fcolor,
+        map: ts.map,
+        arrgeo: coords,
+        center: cenpos,
+        iwc: content
+      });
+      drawnshape.addListener('click', function () {
+        console.log("clicked", this.center);
+        ts.infowindow.close();
+        ts.infowindow.setPosition(this.center);
+        ts.infowindow.setContent(this.iwc);
+        ts.infowindow.open(ts.map, this);
+      });
+      console.log("drawnshape", drawnshape);
+      ts.shapes.push(drawnshape);
+    },
+    getPlots: function getPlots() {
+      var ts = this;
+      fetch("/getplots").then(function (res) {
+        return res.json();
+      }).then(function (res) {
+        console.log("plots", res);
+        res.forEach(function (plot) {
+          ts.drawPlot(plot);
+        });
+      });
+    },
+    moneyformat: function moneyformat(value) {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "PHP",
+        minimumFractionDigits: 2
+      }).format(value);
     }
   }
 });
@@ -28411,19 +28686,333 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
+  return _c("div", [
+    _c("div", { attrs: { id: "map" } }),
+    _vm._v(" "),
+    _c("br"),
+    _vm._v(" "),
+    _vm.isAdmin
+      ? _c("div", [
+          _c("div", { staticClass: "btn-area" }, [
+            _c(
+              "button",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: !_vm.drawing,
+                    expression: "!drawing",
+                  },
+                ],
+                staticClass: "btn btn-sm btn-primary",
+                attrs: { id: "draw" },
+                on: {
+                  click: function ($event) {
+                    return _vm.drawTools()
+                  },
+                },
+              },
+              [_vm._v("\n        Add Plot\n      ")]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.drawing,
+                    expression: "drawing",
+                  },
+                ],
+                staticClass: "btn btn-sm btn-success",
+                attrs: { id: "savedraw" },
+                on: {
+                  click: function ($event) {
+                    return _vm.createPlot()
+                  },
+                },
+              },
+              [_vm._v("\n        Save\n      ")]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.drawing,
+                    expression: "drawing",
+                  },
+                ],
+                staticClass: "btn btn-sm btn-danger",
+                attrs: { id: "canceldraw" },
+                on: {
+                  click: function ($event) {
+                    return _vm.drawTools()
+                  },
+                },
+              },
+              [_vm._v("\n        Cancel\n      ")]
+            ),
+          ]),
+          _vm._v(" "),
+          _c("hr"),
+          _vm._v(" "),
+          _c("div", { staticClass: "row" }, [
+            _c("h5", [_vm._v("Grave Information")]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-md" }, [
+              _c("div", { staticClass: "mb-3" }, [
+                _c("label", { staticClass: "form-label" }, [
+                  _vm._v("Grave Type:"),
+                ]),
+                _vm._v(" "),
+                _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.grave_data.type,
+                        expression: "grave_data.type",
+                      },
+                    ],
+                    staticClass: "form-select",
+                    attrs: { name: "" },
+                    on: {
+                      change: function ($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function (o) {
+                            return o.selected
+                          })
+                          .map(function (o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.$set(
+                          _vm.grave_data,
+                          "type",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
+                      },
+                    },
+                  },
+                  [
+                    _c("option", { attrs: { value: "0" } }, [
+                      _vm._v("Type A (₱20,000)"),
+                    ]),
+                    _vm._v(" "),
+                    _c("option", { attrs: { value: "1" } }, [
+                      _vm._v("Type B (₱50,000)"),
+                    ]),
+                    _vm._v(" "),
+                    _c("option", { attrs: { value: "2" } }, [
+                      _vm._v("Type C (₱80,000)"),
+                    ]),
+                  ]
+                ),
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "mb-3" }, [
+                _c("label", { staticClass: "form-label" }, [_vm._v("Block:")]),
+                _vm._v(" "),
+                _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.grave_data.block,
+                        expression: "grave_data.block",
+                      },
+                    ],
+                    staticClass: "form-select",
+                    attrs: { name: "" },
+                    on: {
+                      change: function ($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function (o) {
+                            return o.selected
+                          })
+                          .map(function (o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.$set(
+                          _vm.grave_data,
+                          "block",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
+                      },
+                    },
+                  },
+                  [
+                    _c("option", { attrs: { value: "0" } }, [_vm._v("A")]),
+                    _vm._v(" "),
+                    _c("option", { attrs: { value: "1" } }, [_vm._v("B")]),
+                    _vm._v(" "),
+                    _c("option", { attrs: { value: "2" } }, [_vm._v("C")]),
+                  ]
+                ),
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "mb-3" }, [
+                _c("label", { staticClass: "form-label" }, [_vm._v("Area:")]),
+                _vm._v(" "),
+                _c("div", { staticClass: "input-group mb-3" }, [
+                  _c(
+                    "span",
+                    {
+                      staticClass: "input-group-text",
+                      attrs: { id: "basic-addon1" },
+                    },
+                    [_vm._v("Length")]
+                  ),
+                  _vm._v(" "),
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.grave_data.area_length,
+                        expression: "grave_data.area_length",
+                      },
+                    ],
+                    staticClass: "form-control",
+                    attrs: {
+                      type: "number",
+                      placeholder: "In meters",
+                      "aria-label": "length",
+                      "aria-describedby": "basic-addon1",
+                    },
+                    domProps: { value: _vm.grave_data.area_length },
+                    on: {
+                      input: function ($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.$set(
+                          _vm.grave_data,
+                          "area_length",
+                          $event.target.value
+                        )
+                      },
+                    },
+                  }),
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "input-group mb-3" }, [
+                  _c(
+                    "span",
+                    {
+                      staticClass: "input-group-text",
+                      attrs: { id: "basic-addon1" },
+                    },
+                    [_vm._v("Width")]
+                  ),
+                  _vm._v(" "),
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.grave_data.area_width,
+                        expression: "grave_data.area_width",
+                      },
+                    ],
+                    staticClass: "form-control",
+                    attrs: {
+                      type: "number",
+                      placeholder: "In meters",
+                      "aria-label": "length",
+                      "aria-describedby": "basic-addon1",
+                    },
+                    domProps: { value: _vm.grave_data.area_width },
+                    on: {
+                      input: function ($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.$set(
+                          _vm.grave_data,
+                          "area_width",
+                          $event.target.value
+                        )
+                      },
+                    },
+                  }),
+                ]),
+              ]),
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-md" }, [
+              _c("div", { staticClass: "mb-3" }, [
+                _c("label", { staticClass: "form-label" }, [_vm._v("Status:")]),
+                _vm._v(" "),
+                _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.grave_data.status,
+                        expression: "grave_data.status",
+                      },
+                    ],
+                    staticClass: "form-select",
+                    attrs: { name: "status" },
+                    on: {
+                      change: function ($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function (o) {
+                            return o.selected
+                          })
+                          .map(function (o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.$set(
+                          _vm.grave_data,
+                          "status",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
+                      },
+                    },
+                  },
+                  [
+                    _c("option", { attrs: { value: "0" } }, [
+                      _vm._v("Available"),
+                    ]),
+                    _vm._v(" "),
+                    _c("option", { attrs: { value: "1" } }, [
+                      _vm._v("Maintenance"),
+                    ]),
+                  ]
+                ),
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "mb-3" }),
+            ]),
+          ]),
+        ])
+      : _vm._e(),
+  ])
 }
-var staticRenderFns = [
-  function () {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [
-      _vm._v("\n  asd\n  "),
-      _c("div", { attrs: { id: "map" } }),
-    ])
-  },
-]
+var staticRenderFns = []
 render._withStripped = true
 
 

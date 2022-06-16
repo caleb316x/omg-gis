@@ -17,8 +17,9 @@ class CreateCoordinatesTable extends Migration
         Schema::create('coordinates', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Plot::class)->nullable()->constrained();
-            $table->double('lat');
-            $table->double('long');
+            $table->double('lat')->nullable();
+            $table->double('long')->nullable();
+            $table->string('shape_type')->nullable();
             $table->timestamps();
         });
     }

@@ -25,13 +25,13 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="{{ asset( 'vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
 
 </head>
 
@@ -44,7 +44,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-map"></i>
                 </div>
@@ -61,30 +61,18 @@
                     <span>Dashboard</span></a>
             </li>
 
+            
+            
+            @auth
             <!-- Divider -->
             <hr class="sidebar-divider">
-
             <!-- Heading -->
             <div class="sidebar-heading">
                 Menu
             </div>
+            @endauth
 
             @can('isAdmin')
-                <!-- Nav Item - Pages Collapse Menu -->
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                        aria-expanded="true" aria-controls="collapseTwo">
-                        <i class="fas fa-fw fa-user-circle"></i>
-                        <span>Clients</span>
-                    </a>
-                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
-                            <a class="collapse-item" href="{{ route('client') }}">List</a>
-                            <a class="collapse-item" href="cards.html">Create</a>
-                        </div>
-                    </div>
-                </li>
 
                 <!-- Nav Item - Utilities Collapse Menu -->
                 <li class="nav-item">
@@ -97,8 +85,8 @@
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             {{-- <h6 class="collapse-header">Custom Utilities:</h6> --}}
-                            <a class="collapse-item" href="utilities-color.html">List</a>
-                            <a class="collapse-item" href="utilities-border.html">Register</a>
+                            <a class="collapse-item" href="{{route('users')}}">List</a>
+                            <a class="collapse-item" href="{{route('users.create')}}">Register</a>
                         </div>
                     </div>
                 </li>
@@ -112,9 +100,9 @@
                     </a>
                     <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
-                            <a class="collapse-item" href="login.html">View Map</a>
-                            <a class="collapse-item" href="register.html">List</a>
-                            <a class="collapse-item" href="forgot-password.html">Create</a>
+                            <a class="collapse-item" href="{{ route('map') }}">View Map</a>
+                            <a class="collapse-item" href="#">List</a>
+                            {{-- <a class="collapse-item" href="#">Create</a> --}}
                         </div>
                     </div>
                 </li>
@@ -129,7 +117,7 @@
                     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
-                            <a class="collapse-item" href="buttons.html">List</a>
+                            <a class="collapse-item" href="#">List</a>
                             {{-- <a class="collapse-item" href="cards.html">List</a> --}}
                         </div>
                     </div>
@@ -137,6 +125,22 @@
 
 
             @elsecan('isFrontDesk')
+                
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseT"
+                        aria-expanded="true" aria-controls="collapseT">
+                        <i class="fas fa-fw fa-user-circle"></i>
+                        <span>Clients</span>
+                    </a>
+                    <div id="collapseT" class="collapse" aria-labelledby="headingT" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
+                            <a class="collapse-item" href="{{ route('client') }}">List</a>
+                            <a class="collapse-item" href="{{ route('client.create') }}">Register</a>
+                        </div>
+                    </div>
+                </li>
+                
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
                         aria-expanded="true" aria-controls="collapseTwo">
@@ -146,14 +150,14 @@
                     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
-                            <a class="collapse-item" href="buttons.html">Map</a>
-                            <a class="collapse-item" href="cards.html">List</a>
+                            <a class="collapse-item" href="{{route('map')}}">Map</a>
+                            <a class="collapse-item" href="#">List</a>
                         </div>
                     </div>
                 </li>
 
-            
-            @else //isClient
+                {{-- //isClient --}}
+            @elsecan('isClient')
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
                         aria-expanded="true" aria-controls="collapseTwo">
@@ -163,8 +167,8 @@
                     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             {{-- <h6 class="collapse-header">Custom Components:</h6> --}}
-                            <a class="collapse-item" href="buttons.html">Map</a>
-                            <a class="collapse-item" href="cards.html">List</a>
+                            <a class="collapse-item" href="#">Map</a>
+                            <a class="collapse-item" href="#">List</a>
                         </div>
                     </div>
                 </li>
@@ -220,7 +224,7 @@
                     <ul class="navbar-nav ml-auto">
 
                         <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
+                        {{-- <li class="nav-item dropdown no-arrow d-sm-none">
                             <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-search fa-fw"></i>
@@ -241,18 +245,27 @@
                                     </div>
                                 </form>
                             </div>
-                        </li>
+                        </li> --}}
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
+                            @auth
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ ucfirst(Auth::user()->username) }} </span>
                                 <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                    src="{{ asset('img/undraw_profile.svg')}}">
                             </a>
+                            @endauth
+
+                            @guest
+                            <a class="dropdown-item" href="{{route('login')}}">
+                                <i class="fas fa-sign-in-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Login
+                            </a>
+                            @endguest
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
@@ -328,21 +341,24 @@
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <a class="btn btn-primary" href="#" onclick="event.preventDefault();document.getElementById('logout-form').submit();">Logout</a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        {{ csrf_field() }}
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
     
     <!-- Page level plugins -->
     {{-- <script src="vendor/chart.js/Chart.min.js"></script>

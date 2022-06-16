@@ -14,14 +14,10 @@
                         </div>
                     @endif
 
-                    {{ __('You are logged in!') }}
+                    {{-- {{ __('You are logged in!') }} --}}
 
                     <div id="app">
-                        ++++
-                        <map-view>
-                        </map-view>
-                        
-                        ---
+                        <map-view></map-view>
                     </div>
                 </div>
             </div>

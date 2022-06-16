@@ -55,4 +55,17 @@ class User extends Authenticatable
             return ucfirst($this->first_name) .' '.ucfirst($this->middle_name)[0] .'. '. ucfirst($this->last_name);
         }
     }
+
+    public function getRoleNameAttribute(){
+        switch($this->role){
+            case 1:
+                return 'Front Desk';
+            case 2:
+                return 'Cashier';
+            case 3:
+                return 'Client';
+            default:
+                return 'Admin';
+        }
+    }
 }

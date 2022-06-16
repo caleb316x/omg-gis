@@ -14,8 +14,14 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::paginate(15);
-        return view('client.index')->with('users' , $users);
+        $users = User::where('role',3)->paginate(15);
+        return view('clients.index')->with('users' , $users);
+    }
+
+    public function users()
+    {
+        $users = User::where('role','!=',3)->paginate(15);
+        return view('users.index')->with('users' , $users);
     }
 
     /**
@@ -25,7 +31,12 @@ class UserController extends Controller
      */
     public function create()
     {
-        
+        return view('auth.register');
+    }
+
+    public function createAdmin()
+    {
+        return view('auth.register');
     }
 
     /**

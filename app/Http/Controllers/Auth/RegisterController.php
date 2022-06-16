@@ -8,6 +8,9 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Arr;
 
 class RegisterController extends Controller
 {
@@ -38,7 +41,36 @@ class RegisterController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest');
+        // $this->middleware('guest');
+    }
+
+    // protected function validator(array $data)
+    // {
+    //     return Validator::make($data, [
+    //         'username' => ['unique:users'],
+    //         'first_name' => ['required', 'string', 'max:255'],
+    //         'middle_name' => ['required', 'string', 'max:255'],
+    //         'last_name' => ['required', 'string', 'max:255'],
+    //         'password' => ['required', 'string', 'min:8', 'confirmed'],
+    //     ]);
+    // }
+
+    public function register(Request $request)
+    {
+        $validator = $this->validator($request->all());
+
+        if ($validator->fails()) {
+            $this->validator($request->all())->validate();
+        }
+
+        $this->create($request->all());
+
+        if(Arr::exists($request, 'role')){
+            return redirect(route('users')); // Change this route to your needs
+        }
+        else{
+            return redirect(route('client')); // Change this route to your needs
+        }
     }
 
     /**
@@ -69,16 +101,29 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
 
-        // dd($data);
-        return User::create([
-            'username' => $data['username'],
-            'first_name' => $data['first_name'],
-            'middle_name' => $data['middle_name'],
-            'last_name' => $data['last_name'],
-            'suffix' => $data['suffix'],
-            'role' => $data['role'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+        if(Arr::exists($data, 'role')){
+            return User::create([
+                'username' => $data['username'],
+                'first_name' => $data['first_name'],
+                'middle_name' => $data['middle_name'],
+                'last_name' => $data['last_name'],
+                'suffix' => $data['suffix'],
+                'role' => $data['role'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+            ]);
+        }
+        else{
+            return User::create([
+                'username' => $data['username'],
+                'first_name' => $data['first_name'],
+                'middle_name' => $data['middle_name'],
+                'last_name' => $data['last_name'],
+                'suffix' => $data['suffix'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+            ]);
+        }
+        
     }
 }
