@@ -30,6 +30,11 @@ class UserController extends Controller
         return $users;
     }
 
+    public function getuser($id)
+    {
+        $user = User::find($id);
+        return $user;
+    }
     /**
      * Show the form for creating a new resource.
      *

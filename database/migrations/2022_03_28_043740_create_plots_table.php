@@ -18,6 +18,8 @@ class CreatePlotsTable extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->nullable()->constrained();
             $table->string('name')->nullable();
+            $table->date('birth_date')->nullable();
+            $table->date('death_date')->nullable();
             $table->integer('type')->nullable();
             $table->float('price')->nullable();
             $table->float('area_length')->nullable();

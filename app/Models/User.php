@@ -68,4 +68,9 @@ class User extends Authenticatable
                 return 'Admin';
         }
     }
+
+    // public function plot()
+    // {
+    //     return $this->belongsTo(Plot::class);
+    // }
 }

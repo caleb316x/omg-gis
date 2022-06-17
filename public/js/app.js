@@ -5379,6 +5379,103 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: {
     isAdmin: Boolean,
@@ -5413,8 +5510,13 @@ __webpack_require__.r(__webpack_exports__);
       clientlist: null,
       selectedClient: null,
       dName: "",
+      fullname: "",
+      BDate: null,
+      DDate: null,
       graveinfo: {
         id: null,
+        birth_date: null,
+        death_date: null,
         Scolor: null,
         Fcolor: null,
         type: null,
@@ -5602,10 +5704,18 @@ __webpack_require__.r(__webpack_exports__);
       var content = "";
 
       if (ts.isFrontdesk) {
-        content = "<p> Grave type: <b>" + gdata.type + "</b></p> <p> Grave Status: <b>" + gdata.status + "</b></p><p> Area (LxW) meters: <b>" + data.area_length + " x " + data.area_width + "</b></p><p> Price: <b>" + ts.moneyformat(gdata.price) + "</b></p><p>" + viewbtn + "</p>";
+        // content = "<p> Grave type: <b>" + gdata.type + "</b></p> <p> Grave Status: <b>" + gdata.status + "</b></p><p> Area (LxW) meters: <b>" + data.area_length + " x " + data.area_width + "</b></p><p> Price: <b>" + ts.moneyformat(gdata.price) + "</b></p><p>" + viewbtn + "</p>";
         content = viewbtn;
       } else {
-        content = "<p> Grave type: <b>" + gdata.type + "</b></p> <p> Grave Status: <b>" + gdata.status + "</b></p><p> Area (LxW) meters: <b>" + data.area_length + " x " + data.area_width + "</b></p><p> Price: <b>" + ts.moneyformat(gdata.price) + "</b></p>";
+        if (gdata.status == "Occupied") {
+          content = "<p> Grave type: <b>" + gdata.type + "</b></p>\
+          <p>Name: <b>" + gdata.name + "</b></p>\
+          <p>Date of Birth: <b>" + gdata.birth_date + "</b></p>\
+          <p>Date of Death:<b>" + gdata.death_date + "</b></p>\
+          ";
+        } else {
+          content = "<p> Grave type: <b>" + gdata.type + "</b></p> <p> Grave Status: <b>" + gdata.status + "</b></p><p> Area (LxW) meters: <b>" + data.area_length + " x " + data.area_width + "</b></p><p> Price: <b>" + ts.moneyformat(gdata.price) + "</b></p>";
+        }
       }
 
       var drawnshape = new google.maps.Polygon({
@@ -5646,6 +5756,8 @@ __webpack_require__.r(__webpack_exports__);
       var area_width = data.area_width;
       var block = null;
       var clientID = data.user_id;
+      var birth_date = data.birth_date;
+      var death_date = data.death_date;
 
       if (data.type == "0") {
         Scolor = "#FF0000";
@@ -5687,6 +5799,11 @@ __webpack_require__.r(__webpack_exports__);
         status = "Maintenance";
       }
 
+      if (clientID != null) {
+        Fcolor = "#00FF00";
+        status = "Occupied";
+      }
+
       return {
         id: id,
         Scolor: Scolor,
@@ -5698,7 +5815,9 @@ __webpack_require__.r(__webpack_exports__);
         area_length: area_length,
         area_width: area_width,
         block: block,
-        clientID: clientID
+        clientID: clientID,
+        birth_date: birth_date,
+        death_date: death_date
       };
     },
     getPlots: function getPlots() {
@@ -5731,16 +5850,21 @@ __webpack_require__.r(__webpack_exports__);
     UpdateGrave: function UpdateGrave(user_id) {
       var selID = this.$refs.selectedItem.value;
       var InpDName = this.$refs.Dname.value;
+      var bdate = this.$refs.Bdate.value;
+      var ddate = this.$refs.Ddate.value;
+      console.log("bdate", bdate);
       var ts = this;
       fetch("/graveUpdate/" + user_id, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify({
           "name": InpDName,
-          "user_id": selID
+          "user_id": selID,
+          "birth_date": bdate,
+          "death_date": ddate
         })
       }).then(function (res) {
         return res.json();
@@ -5758,7 +5882,25 @@ __webpack_require__.r(__webpack_exports__);
         console.log("grave", res);
         ts.graveinfo = ts.graveMutateData(res);
         console.log("gi", ts.graveinfo);
+        ts.getUser(res.user_id);
+        ts.$refs.Dname.value = res.name;
       });
+    },
+    getUser: function getUser(id) {
+      var ts = this;
+      fetch("/getuser/" + id).then(function (res) {
+        return res.json();
+      }).then(function (res) {
+        console.log("user", res);
+        ts.fullname = res.first_name + " " + res.middle_name + " " + res.last_name;
+      });
+    },
+    datetoString: function datetoString(date) {
+      var d = new Date(date);
+      var month = d.getMonth() + 1;
+      var day = d.getDate();
+      var year = d.getFullYear();
+      return month + "/" + day + "/" + year;
     }
   }
 });
@@ -28819,6 +28961,23 @@ var render = function () {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
+    _c(
+      "button",
+      {
+        staticClass: "btn btn-primary",
+        attrs: {
+          type: "button",
+          "data-toggle": "modal",
+          "data-target": "#exampleModal",
+        },
+      },
+      [_vm._v("\n    Grave Legend\n  ")]
+    ),
+    _vm._v(" "),
+    _c("hr"),
+    _vm._v(" "),
+    _vm._m(0),
+    _vm._v(" "),
     _c("div", { attrs: { id: "map" } }),
     _vm._v(" "),
     _c("br"),
@@ -29161,7 +29320,7 @@ var render = function () {
           { staticClass: "modal-dialog", attrs: { role: "document" } },
           [
             _c("div", { staticClass: "modal-content" }, [
-              _vm._m(0),
+              _vm._m(1),
               _vm._v(" "),
               _c("div", { staticClass: "modal-body" }, [
                 _c("p", [_vm._v("Grave type: " + _vm._s(_vm.graveinfo.type))]),
@@ -29183,15 +29342,31 @@ var render = function () {
                   ),
                 ]),
                 _vm._v(" "),
-                _vm.graveinfo.name != null
-                  ? _c("p", [
-                      _vm._v("Client name: " + _vm._s(_vm.graveinfo.name)),
-                    ])
+                _vm.graveinfo.clientID != null
+                  ? _c("p", [_vm._v("Client name: " + _vm._s(_vm.fullname))])
                   : _vm._e(),
                 _vm._v(" "),
                 _vm.graveinfo.name != null
                   ? _c("p", [
                       _vm._v("Deceased name: " + _vm._s(_vm.graveinfo.name)),
+                    ])
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.graveinfo.name != null
+                  ? _c("p", [
+                      _vm._v(
+                        "Date of Birth: " +
+                          _vm._s(_vm.datetoString(_vm.graveinfo.birth_date))
+                      ),
+                    ])
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.graveinfo.name != null
+                  ? _c("p", [
+                      _vm._v(
+                        "Date of Death: " +
+                          _vm._s(_vm.datetoString(_vm.graveinfo.death_date))
+                      ),
                     ])
                   : _vm._e(),
                 _vm._v(" "),
@@ -29211,33 +29386,7 @@ var render = function () {
                         _vm._v(" "),
                         _c(
                           "select",
-                          {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.selectedClient,
-                                expression: "selectedClient",
-                              },
-                            ],
-                            ref: "selectedItem",
-                            staticClass: "form-select",
-                            on: {
-                              change: function ($event) {
-                                var $$selectedVal = Array.prototype.filter
-                                  .call($event.target.options, function (o) {
-                                    return o.selected
-                                  })
-                                  .map(function (o) {
-                                    var val = "_value" in o ? o._value : o.value
-                                    return val
-                                  })
-                                _vm.selectedClient = $event.target.multiple
-                                  ? $$selectedVal
-                                  : $$selectedVal[0]
-                              },
-                            },
-                          },
+                          { ref: "selectedItem", staticClass: "form-select" },
                           [
                             _c("option", { attrs: { value: "null" } }, [
                               _vm._v(" ---- "),
@@ -29246,7 +29395,13 @@ var render = function () {
                             _vm._l(_vm.clientlist, function (client) {
                               return _c(
                                 "option",
-                                { domProps: { value: client.id } },
+                                {
+                                  domProps: {
+                                    value: client.id,
+                                    selected:
+                                      client.id == _vm.graveinfo.clientID,
+                                  },
+                                },
                                 [
                                   _vm._v(
                                     "\n                  " +
@@ -29255,6 +29410,10 @@ var render = function () {
                                       _vm._s(client.middle_name) +
                                       " " +
                                       _vm._s(client.last_name) +
+                                      " " +
+                                      _vm._s(
+                                        client.id == _vm.graveinfo.clientID
+                                      ) +
                                       "\n                "
                                   ),
                                 ]
@@ -29282,6 +29441,40 @@ var render = function () {
                         }),
                       ]),
                       _vm._v(" "),
+                      _c("div", { staticClass: "mb-3 mt-3" }, [
+                        _c(
+                          "label",
+                          {
+                            staticClass: "form-label",
+                            attrs: { for: "email" },
+                          },
+                          [_vm._v("Date of Birth:")]
+                        ),
+                        _vm._v(" "),
+                        _c("input", {
+                          ref: "Bdate",
+                          staticClass: "form-control",
+                          attrs: { type: "date" },
+                        }),
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "mb-3 mt-3" }, [
+                        _c(
+                          "label",
+                          {
+                            staticClass: "form-label",
+                            attrs: { for: "email" },
+                          },
+                          [_vm._v("Date of Death:")]
+                        ),
+                        _vm._v(" "),
+                        _c("input", {
+                          ref: "Ddate",
+                          staticClass: "form-control",
+                          attrs: { type: "date" },
+                        }),
+                      ]),
+                      _vm._v(" "),
                       _c(
                         "button",
                         {
@@ -29298,7 +29491,84 @@ var render = function () {
                   : _vm._e(),
               ]),
               _vm._v(" "),
-              _vm._m(1),
+              _vm._m(2),
+            ]),
+          ]
+        ),
+      ]
+    ),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: {
+          id: "exampleModal",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "exampleModalLabel",
+          "aria-hidden": "true",
+        },
+      },
+      [
+        _c(
+          "div",
+          { staticClass: "modal-dialog", attrs: { role: "document" } },
+          [
+            _c("div", { staticClass: "modal-content" }, [
+              _vm._m(3),
+              _vm._v(" "),
+              _c("div", { staticClass: "modal-body" }, [
+                _c("div", { staticClass: "row" }, [
+                  _c("div", { staticClass: "col-md-6" }, [
+                    _c("table", { attrs: { border: "1", width: "100px" } }, [
+                      _c("tr", [
+                        _c(
+                          "th",
+                          { attrs: { colspan: "2" } },
+                          [_c("center", [_vm._v("Grave Status")])],
+                          1
+                        ),
+                      ]),
+                      _vm._v(" "),
+                      _vm._m(4),
+                      _vm._v(" "),
+                      _vm._m(5),
+                      _vm._v(" "),
+                      _vm._m(6),
+                      _vm._v(" "),
+                      _vm._m(7),
+                    ]),
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-md-6" }, [
+                    _c(
+                      "table",
+                      { attrs: { border: "1px solid black", width: "100px" } },
+                      [
+                        _c("tr", [
+                          _c(
+                            "th",
+                            { attrs: { colspan: "2" } },
+                            [_c("center", [_vm._v("Grave type")])],
+                            1
+                          ),
+                        ]),
+                        _vm._v(" "),
+                        _vm._m(8),
+                        _vm._v(" "),
+                        _vm._m(9),
+                        _vm._v(" "),
+                        _vm._m(10),
+                        _vm._v(" "),
+                        _vm._m(11),
+                      ]
+                    ),
+                  ]),
+                ]),
+              ]),
+              _vm._v(" "),
+              _vm._m(12),
             ]),
           ]
         ),
@@ -29307,6 +29577,28 @@ var render = function () {
   ])
 }
 var staticRenderFns = [
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "input-group mb-3" }, [
+      _c(
+        "span",
+        { staticClass: "input-group-text", attrs: { id: "basic-addon1" } },
+        [_vm._v("Search")]
+      ),
+      _vm._v(" "),
+      _c("input", {
+        staticClass: "form-control",
+        attrs: {
+          type: "text",
+          placeholder: "Search Name",
+          "aria-label": "Username",
+          "aria-describedby": "basic-addon1",
+        },
+      }),
+    ])
+  },
   function () {
     var _vm = this
     var _h = _vm.$createElement
@@ -29344,6 +29636,123 @@ var staticRenderFns = [
           attrs: { type: "button", "data-dismiss": "modal" },
         },
         [_vm._v("Cancel")]
+      ),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-header" }, [
+      _c(
+        "h5",
+        { staticClass: "modal-title", attrs: { id: "exampleModalLabel" } },
+        [_vm._v("Grave Legend")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "close",
+          attrs: {
+            type: "button",
+            "data-dismiss": "modal",
+            "aria-label": "Close",
+          },
+        },
+        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+      ),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("th", [_vm._v("Type")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("Fill Color")]),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("td", [_vm._v("Available")]),
+      _vm._v(" "),
+      _c("td", { attrs: { bgcolor: "#00a1c2" } }),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("td", [_vm._v("Occupied")]),
+      _vm._v(" "),
+      _c("td", { attrs: { bgcolor: "#00FF00" } }),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("td", [_vm._v("Maintenance")]),
+      _vm._v(" "),
+      _c("td", { attrs: { bgcolor: "#B22222" } }),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("th", [_vm._v("Type")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("Border Color")]),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("td", [_vm._v("A")]),
+      _vm._v(" "),
+      _c("td", { attrs: { bgcolor: "#FF0000" } }),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("td", [_vm._v("B")]),
+      _vm._v(" "),
+      _c("td", { attrs: { bgcolor: "#0000FF" } }),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("td", [_vm._v("C")]),
+      _vm._v(" "),
+      _c("td", { attrs: { bgcolor: "#008000" } }),
+    ])
+  },
+  function () {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-footer" }, [
+      _c(
+        "button",
+        { staticClass: "btn btn-primary", attrs: { type: "button" } },
+        [_vm._v("Save changes")]
       ),
     ])
   },

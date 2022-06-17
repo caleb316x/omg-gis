@@ -16,4 +16,14 @@ class Plot extends Model
     {
         return $this->hasMany(Coordinate::class);
     }
+
+    // public function user()
+    // {
+    //     return $this->has(User::class);
+    // }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

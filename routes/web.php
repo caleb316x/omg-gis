@@ -27,12 +27,13 @@ Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])-
 Route::get('/map', [App\Http\Controllers\PlotController::class, 'mapview'])->name('map');
 Route::get('/getplots', [App\Http\Controllers\PlotController::class, 'getPlots'])->name('plots');
 Route::get('/getgrave/{id}', [App\Http\Controllers\PlotController::class, 'getGrave'])->name('grave');
-Route::post('/graveUpdate/{id}', [App\Http\Controllers\PlotController::class, 'graveUpdate'])->name('grave.update');
+Route::put('/graveUpdate/{id}', [App\Http\Controllers\PlotController::class, 'graveUpdate'])->name('grave.update');
 Route::resource('plots',PlotController::class);
 
 
 //users
 Route::get('/users', [App\Http\Controllers\UserController::class, 'users'])->name('users');
+Route::get('/getuser/{id}', [App\Http\Controllers\UserController::class, 'getuser'])->name('user.get');
 Route::get('/users/create', [App\Http\Controllers\UserController::class, 'createAdmin'])->name('users.create');
 Route::get('/clientlist', [App\Http\Controllers\UserController::class, 'clientlist'])->name('users.clients');
 

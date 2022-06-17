@@ -31,7 +31,7 @@ class PlotController extends Controller
 
     public function getGrave($id)
     {
-        $plot = Plot::find($id);
+        $plot = Plot::with('user')->find($id);
         return response()->json($plot);
     }
 
@@ -83,10 +83,12 @@ class PlotController extends Controller
     }
 
     public function graveUpdate(Request $request, $id){
-        return $request;
+        // return $request;
         $plot = Plot::find($id);
         $plot->name = $request->name;
         $plot->user_id = $request->user_id;
+        $plot->birth_date = $request->birth_date;
+        $plot->death_date = $request->death_date;
         $plot->save();
 
         return $plot;
