@@ -29,6 +29,12 @@ class PlotController extends Controller
         return response()->json($plots);
     }
 
+    public function getGrave($id)
+    {
+        $plot = Plot::find($id);
+        return response()->json($plot);
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -75,6 +81,17 @@ class PlotController extends Controller
     {
         //
     }
+
+    public function graveUpdate(Request $request, $id){
+        return $request;
+        $plot = Plot::find($id);
+        $plot->name = $request->name;
+        $plot->user_id = $request->user_id;
+        $plot->save();
+
+        return $plot;
+    }
+
 
     /**
      * Update the specified resource in storage.

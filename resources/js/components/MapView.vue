@@ -1,31 +1,16 @@
 <template>
   <div>
     <div id="map"></div>
-      <br />
+    <br />
     <div v-if="isAdmin">
       <div class="btn-area">
-        <button
-          class="btn btn-sm btn-primary"
-          v-on:click="drawTools()"
-          v-show="!drawing"
-          id="draw"
-        >
+        <button class="btn btn-sm btn-primary" v-on:click="drawTools()" v-show="!drawing" id="draw">
           Add Plot
         </button>
-        <button
-          class="btn btn-sm btn-success"
-          v-show="drawing"
-          id="savedraw"
-          v-on:click="createPlot()"
-        >
+        <button class="btn btn-sm btn-success" v-show="drawing" id="savedraw" v-on:click="createPlot()">
           Save
         </button>
-        <button
-          class="btn btn-sm btn-danger"
-          v-on:click="drawTools()"
-          v-show="drawing"
-          id="canceldraw"
-        >
+        <button class="btn btn-sm btn-danger" v-on:click="drawTools()" v-show="drawing" id="canceldraw">
           Cancel
         </button>
       </div>
@@ -53,25 +38,13 @@
             <label class="form-label">Area:</label>
             <div class="input-group mb-3">
               <span class="input-group-text" id="basic-addon1">Length</span>
-              <input
-                type="number"
-                class="form-control"
-                placeholder="In meters"
-                aria-label="length"
-                aria-describedby="basic-addon1"
-                v-model="grave_data.area_length"
-              />
+              <input type="number" class="form-control" placeholder="In meters" aria-label="length"
+                aria-describedby="basic-addon1" v-model="grave_data.area_length" />
             </div>
             <div class="input-group mb-3">
               <span class="input-group-text" id="basic-addon1">Width</span>
-              <input
-                type="number"
-                class="form-control"
-                placeholder="In meters"
-                aria-label="length"
-                aria-describedby="basic-addon1"
-                v-model="grave_data.area_width"
-              />
+              <input type="number" class="form-control" placeholder="In meters" aria-label="length"
+                aria-describedby="basic-addon1" v-model="grave_data.area_width" />
             </div>
           </div>
         </div>
@@ -94,6 +67,51 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" id="gravemodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">View Grave</h5>
+            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Grave type: {{ graveinfo.type }}</p>
+            <p>Price: {{ moneyformat(graveinfo.price) }}</p>
+            <p>Block: {{ graveinfo.block }}</p>
+            <p>Area (LxW) meters: {{ graveinfo.area_length }} x {{ graveinfo.area_width }}</p>
+            <p v-if="graveinfo.name != null">Client name: {{ graveinfo.name }}</p>
+            <p v-if="graveinfo.name != null">Deceased name: {{ graveinfo.name }}</p>
+
+            <div v-if="isFrontdesk">
+              <hr>
+              <div class="mb-3 mt-3">
+                <label for="email" class="form-label">Client:</label>
+                <select class="form-select" ref="selectedItem" v-model="selectedClient">
+                  <option value="null"> ---- </option>
+                  <option v-for="client in clientlist" :value="client.id">
+                    {{ client.first_name }} {{ client.middle_name }} {{ client.last_name }}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-3 mt-3">
+                <label for="email" class="form-label">Deceased name:</label>
+                <input type="text" ref="Dname" class="form-control" placeholder="Name">
+              </div>
+              <button class="btn btn-sm btn-success" v-on:click="UpdateGrave(graveinfo.id)">Update</button>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <!-- <a class="btn btn-primary" href="login.html">Logout</a> -->
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -101,6 +119,7 @@
 export default {
   props: {
     isAdmin: Boolean,
+    isFrontdesk: Boolean,
   },
   data() {
     return {
@@ -122,9 +141,26 @@ export default {
       clearShapes: null,
       clearSelection: null,
       infowindow: null,
+      clientlist: null,
+      selectedClient: null,
+      dName: "",
+      graveinfo: {
+        id: null,
+        Scolor: null,
+        Fcolor: null,
+        type: null,
+        status: null,
+        price: null,
+        name: null,
+        area_length: null,
+        area_width: null,
+        block: null,
+        clientID: null,
+      },
       grave_data: {
         type: 1,
         price: null,
+        name: null,
         area_length: null,
         area_width: null,
         block: 0,
@@ -139,6 +175,8 @@ export default {
   mounted() {
     this.initMap();
     this.getPlots();
+    console.log("isAdmin", this.isAdmin);
+    console.log("isFrontdesk", this.isFrontdesk);
   },
   methods: {
     initMap() {
@@ -266,7 +304,7 @@ export default {
         type: shape_data.type,
       };
 
-      console.log("grave_data",this.grave_data);
+      console.log("grave_data", this.grave_data);
 
       var requestOptions = {
         method: "POST",
@@ -280,86 +318,142 @@ export default {
       fetch("/plots", requestOptions)
         .then((res) => res.json())
         .then((res) => {
-          console.log("res",res);
+          console.log("res", res);
           this.clearDrawn();
           this.drawPlot(res[0]);
           this.drawTools()
-      });
+        });
 
-      
+
     },
     drawPlot(data) {
 
       var ts = this;
 
       var coords = data.coordinates.map(coord => {
-        return {lat: coord.lat , lng: coord.long}
+        return { lat: coord.lat, lng: coord.long }
       });
-        var Scolor= "#FF0000";
-        var Fcolor = "#00a1c2";
-        var Ctype = "";
-        var Gstatus = "";
-        var price = 0;
-
-      if(data.type == "0"){
-        Scolor = "#FF0000";
-        Ctype = "A";
-        price = 20000;
-      }
-      if(data.type == "1"){
-        Scolor = "#0000FF";
-        Ctype = "B";
-        price = 50000;
-      }
-      if(data.type == "2"){
-        Scolor = "#008000";
-        Ctype = "C";
-        price = 80000;
-      }
-
-      if(data.status == 0){
-        Fcolor = "#00a1c2";
-        Gstatus = "Available";
-      }
-
-      if(data.status == 1){
-        Fcolor = "#B22222";
-        Gstatus = "Maintenance";
-      }
 
       var bounds = new google.maps.LatLngBounds();
 
-      for(var i = 0;i<= coords.length-1;i++){
+      for (var i = 0; i <= coords.length - 1; i++) {
         bounds.extend(new google.maps.LatLng(coords[i].lat, coords[i].lng));
       }
 
-      var cenpos =  new google.maps.LatLng(bounds.getCenter().lat(), bounds.getCenter().lng());
+      var cenpos = new google.maps.LatLng(bounds.getCenter().lat(), bounds.getCenter().lng());
 
-      var content = "<p> Grave type: <b>" + Ctype + "</b></p> <p> Grave Status: <b>" + Gstatus + "</b></p><p> Area (LxW) meters: <b>" +data.area_length+" x "+data.area_width+ "</b></p><p> Price: <b>" + ts.moneyformat(price) + "</b></p>";
+
+      const viewbtn = document.createElement("a");
+      viewbtn.innerHTML = "View";
+      viewbtn.classList.add("btn", "btn-sm", "btn-primary");
+      viewbtn.setAttribute("href", "#");
+      // viewbtn.setAttribute("data-toggle", "modal");
+      // viewbtn.setAttribute("data-target", "#gravemodal");
+      // viewbtn.setAttribute("v-on:click", "drawTools("+data.id+")");
+
+      var gdata = ts.graveMutateData(data);
+
+      var content = "";
+      if (ts.isFrontdesk) {
+        content = "<p> Grave type: <b>" + gdata.type + "</b></p> <p> Grave Status: <b>" + gdata.status + "</b></p><p> Area (LxW) meters: <b>" + data.area_length + " x " + data.area_width + "</b></p><p> Price: <b>" + ts.moneyformat(gdata.price) + "</b></p><p>" + viewbtn + "</p>";
+        content = viewbtn;
+      }
+      else {
+        content = "<p> Grave type: <b>" + gdata.type + "</b></p> <p> Grave Status: <b>" + gdata.status + "</b></p><p> Area (LxW) meters: <b>" + data.area_length + " x " + data.area_width + "</b></p><p> Price: <b>" + ts.moneyformat(gdata.price) + "</b></p>";
+      }
+
+
 
       var drawnshape = new google.maps.Polygon({
         path: coords,
         geodesic: true,
-        strokeColor: Scolor,
+        strokeColor: gdata.Scolor,
         strokeOpacity: 1.0,
         strokeWeight: 1,
-        fillColor: Fcolor,
+        fillOpacity: 1,
+        fillColor: gdata.Fcolor,
         map: ts.map,
         arrgeo: coords,
         center: cenpos,
         iwc: content,
       });
 
-      drawnshape.addListener('click', function() {
-        console.log("clicked",this.center);
+      viewbtn.addEventListener("click", function () {
+        ts.getGrave(data.id);
+        $('#gravemodal').modal('toggle');
+      });
+
+      drawnshape.addListener('click', function () {
+        console.log("clicked", this.center);
         ts.infowindow.close();
         ts.infowindow.setPosition(this.center);
         ts.infowindow.setContent(this.iwc);
         ts.infowindow.open(ts.map, this);
-      });	
+      });
 
       console.log("drawnshape", drawnshape);
       ts.shapes.push(drawnshape);
+    },
+    graveMutateData(data) {
+      var id = data.id;
+      var Scolor = "#FF0000";
+      var Fcolor = "#00a1c2";
+      var type = "";
+      var status = "";
+      var price = 0;
+      var area_length = data.area_length;
+      var area_width = data.area_width;
+      var block = null;
+      var clientID = data.user_id;
+
+      if (data.type == "0") {
+        Scolor = "#FF0000";
+        type = "A";
+        price = 20000;
+      }
+      if (data.type == "1") {
+        Scolor = "#0000FF";
+        type = "B";
+        price = 50000;
+      }
+      if (data.type == "2") {
+        Scolor = "#008000";
+        type = "C";
+        price = 80000;
+      }
+
+      if (data.block = 0) {
+        block = "A";
+      }
+      if (data.block = 1) {
+        block = "B";
+      }
+      if (data.block = 2) {
+        block = "C";
+      }
+
+      if (data.status == 0) {
+        Fcolor = "#00a1c2";
+        status = "Available";
+      }
+
+      if (data.status == 1) {
+        Fcolor = "#B22222";
+        status = "Maintenance";
+      }
+      return {
+        id: id,
+        Scolor: Scolor,
+        Fcolor: Fcolor,
+        type: type,
+        status: status,
+        price: price,
+        name: data.name,
+        area_length: area_length,
+        area_width: area_width,
+        block: block,
+        clientID: clientID,
+      }
     },
     getPlots() {
       const ts = this;
@@ -372,12 +466,50 @@ export default {
           });
         });
     },
+    getClientList() {
+      const ts = this;
+      fetch("/clientlist")
+        .then((res) => res.json())
+        .then((res) => {
+          console.log("clients", res);
+          ts.clientlist = res;
+        });
+    },
     moneyformat(value) {
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "PHP",
         minimumFractionDigits: 2,
       }).format(value);
+    },
+    UpdateGrave(user_id) {
+      var selID = this.$refs.selectedItem.value
+      var InpDName = this.$refs.Dname.value
+      const ts = this;
+      fetch("/graveUpdate/" + user_id, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify({ "name": InpDName, "user_id": selID }),
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          console.log("Updategrave", res);
+          $('#gravemodal').modal('toggle');
+        });
+    },
+    getGrave(id) {
+      const ts = this;
+      this.getClientList();
+      fetch("/getgrave/" + id)
+        .then((res) => res.json())
+        .then((res) => {
+          console.log("grave", res);
+          ts.graveinfo = ts.graveMutateData(res);
+          console.log("gi", ts.graveinfo)
+        });
     },
   },
 };

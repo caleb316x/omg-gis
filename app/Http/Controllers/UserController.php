@@ -24,6 +24,12 @@ class UserController extends Controller
         return view('users.index')->with('users' , $users);
     }
 
+    public function clientlist()
+    {
+        $users = User::where('role',3)->get();
+        return $users;
+    }
+
     /**
      * Show the form for creating a new resource.
      *

@@ -21,7 +21,7 @@
                         </div>
                     @elsecan('isFrontDesk')
                         <div id="app">
-                            <map-view></map-view>
+                            <map-view v-bind:is-frontdesk="true"></map-view>
                         </div>
                    @elsecan('isClient')
                         <div id="app">
